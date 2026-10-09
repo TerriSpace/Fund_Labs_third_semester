@@ -1,0 +1,3 @@
+/home/home/Workspace/Labs2FUND/FIRSTPACK/10tenth/build/CMakeFiles/done.dir
+/home/home/Workspace/Labs2FUND/FIRSTPACK/10tenth/build/CMakeFiles/edit_cache.dir
+/home/home/Workspace/Labs2FUND/FIRSTPACK/10tenth/build/CMakeFiles/rebuild_cache.dir

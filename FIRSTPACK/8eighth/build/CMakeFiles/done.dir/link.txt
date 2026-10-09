@@ -1,0 +1,1 @@
+/usr/bin/gcc-13 CMakeFiles/done.dir/main.c.o CMakeFiles/done.dir/functions.c.o -o done  -lm 
