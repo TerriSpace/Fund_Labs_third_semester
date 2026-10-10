@@ -21,7 +21,7 @@ Status is_convex(int n, double eps, bool *result, ...) {
     for (int i = 0; i < n; i++) {
         points[i].x = va_arg(args, double);
         points[i].y = va_arg(args, double);
-        if (!isfinite(points[i].x) || !isfinite(points[i].y)) {  // ← новое
+        if (!isfinite(points[i].x) || !isfinite(points[i].y)) {
             va_end(args);
             free(points);
             return STATUS_ERR_INVALID_ARG;

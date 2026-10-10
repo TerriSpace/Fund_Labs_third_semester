@@ -107,14 +107,43 @@ Status parse_arguments(int argc, char *argv[], char **input_path, char **output_
         }
     }
 
-    if (strcmp(*input_path, *output_path) == 0) {
+    int is_same = 0;
+    Status s_same = check_same_file(*input_path, *output_path, &is_same);
+    if (s_same != STATUS_OK) {
+        free(*input_path);
+        free(*output_path);
+        *input_path = NULL;
+        *output_path = NULL;
+        return s_same;
+    }
+
+    if (is_same) {
         free(*input_path);
         free(*output_path);
         *input_path = NULL;
         *output_path = NULL;
         return ERR_SAME_FILE;
     }
+    
+    return STATUS_OK;
+}
 
+Status check_same_file(const char *in_path, const char *out_path, int *is_same) {
+    *is_same = 0;
+
+    struct stat st_in;
+    if (stat(in_path, &st_in) != 0) {
+        return ERR_FILE_OPEN_IN;
+    }
+
+    struct stat st_out;
+    if (stat(out_path, &st_out) != 0) {
+        return STATUS_OK;
+    }
+
+    if (st_in.st_dev == st_out.st_dev && st_in.st_ino == st_out.st_ino) {
+        *is_same = 1;
+    }
 
     return STATUS_OK;
 }

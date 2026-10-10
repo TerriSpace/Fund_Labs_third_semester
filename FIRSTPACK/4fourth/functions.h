@@ -3,6 +3,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <sys/stat.h>
+
+
 typedef enum {
     STATUS_OK,
     ERR_ARGS_COUNT,
@@ -16,6 +19,8 @@ typedef enum {
     ERR_OUTPUT_NAME,
     ERR_SAME_FILE
 } Status;
+
+Status check_same_file(const char *in_path, const char *out_path, int *is_same);
 
 Status parse_arguments(int argc, char *argv[], char **input_path, char **output_path, char *flag);
 
