@@ -98,7 +98,7 @@ Status sum_d(const double eps, const double x, double * const result){
 
     while(fabs(term) > eps){
         n++;
-        term = term * (-x * x) / n;
+        term = term * (-x * x) * (2.0 * n - 1.0) / (2.0 * n);
         if (isinf(term) || isnan(term)) return ERR_OVERFLOW;
         sum += term;
         if (isinf(sum) || isnan(sum)) return ERR_OVERFLOW;

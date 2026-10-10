@@ -135,18 +135,41 @@ void free_array(int **arr) {
     }
 }
 
-int find_closest_value(const int *B, size_t size_B, int target) {
-    int closest = B[0];
-    int min_diff = abs(B[0] - target);
+static int compare_int(const void *a, const void *b) {
+    int x = *(const int *)a;
+    int y = *(const int *)b;
+    if (x < y) return -1;
+    if (x > y) return  1;
+    return 0;
+}
 
-    for (size_t i = 1; i < size_B; i++) {
-        int diff = abs(B[i] - target);
-        if (diff < min_diff) {
-            min_diff = diff;
-            closest  = B[i];
+Status sort_array(int *arr, size_t size) {
+    if (arr == NULL) return STATUS_NULL_POINTER;
+    if (size < 2)    return STATUS_SIZE_ERROR;
+    qsort(arr, size, sizeof(int), compare_int);
+    return STATUS_OK;
+}
+
+int find_closest_value(const int *B, size_t size_B, int target) {
+    size_t left = 0;
+    size_t right = size_B;
+
+    while (left < right) {
+        size_t mid = left + (right - left) / 2;
+        if (B[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid;
         }
     }
-    return closest;
+
+    if (left == 0) return B[0];
+    if (left == size_B) return B[size_B - 1];
+
+    int diff_left  = abs(B[left] - target);
+    int diff_right = abs(B[left - 1] - target);
+
+    return (diff_right <= diff_left) ? B[left - 1] : B[left];
 }
 
 Status create_array_C(const int *A, size_t size_A, const int *B, size_t size_B, int **C) {

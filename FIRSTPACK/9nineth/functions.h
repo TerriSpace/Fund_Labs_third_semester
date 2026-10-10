@@ -35,6 +35,7 @@ void print_array(const int *arr, size_t size);
 size_t get_random_size(void);
 Status create_and_fill_array(int **arr, size_t size);
 void free_array(int **arr);
+Status sort_array(int *arr, size_t size);
 int find_closest_value(const int *B, size_t size_B, int target);
 Status create_array_C(const int *A, size_t size_A, const int *B, size_t size_B, int **C);
 void print_array_limited(const int *arr, size_t size);

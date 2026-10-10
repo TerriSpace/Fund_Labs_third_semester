@@ -69,6 +69,14 @@ int run_task_2(void) {
         return 1;
     }
 
+    status = sort_array(B, size_B);
+    if (status != STATUS_OK) {
+        fprintf(stderr, "Error: sort_array failed.\n");
+        free_array(&A);
+        free_array(&B);
+        return 1;
+    }
+
     status = create_array_C(A, size_A, B, size_B, &C);
     if (status != STATUS_OK) {
         fprintf(stderr, "Error: array C allocation failed.\n");
