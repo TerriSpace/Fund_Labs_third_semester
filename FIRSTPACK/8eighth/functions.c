@@ -1,6 +1,24 @@
 #include "functions.h"
 
 
+
+Status check_same_file(const char *path1, const char *path2) {
+    struct stat st1, st2;
+
+    int res1 = stat(path1, &st1);
+    int res2 = stat(path2, &st2);
+
+    if (res1 != 0 || res2 != 0) {
+        return STATUS_OK;
+    }
+
+    if (st1.st_dev == st2.st_dev && st1.st_ino == st2.st_ino) {
+        return ERR_SAME_FILE;
+    }
+
+    return STATUS_OK;
+}
+
 Status parse_arguments(int argc, char *argv[], const char **input_path, const char **output_path) {
     if (argc != 3) {
         return ERR_ARGS_COUNT;

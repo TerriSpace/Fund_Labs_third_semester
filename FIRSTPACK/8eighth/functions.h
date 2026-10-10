@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <sys/stat.h>
 
 typedef enum {
     STATUS_OK,
@@ -19,7 +20,7 @@ typedef enum {
 
 Status parse_arguments(int argc, char *argv[], const char **input_path, const char **output_path);
 
-
+Status check_same_file(const char *path1, const char *path2);
 char* read_line(FILE *fin, Status *st);
 
 
