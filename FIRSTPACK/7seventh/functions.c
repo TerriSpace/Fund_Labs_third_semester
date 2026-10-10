@@ -10,9 +10,7 @@ static int is_same_file(const char *path1, const char *path2) {
     return (st1.st_ino == st2.st_ino && st1.st_dev == st2.st_dev);
 }
 
-Status parse_arguments(int argc, char *argv[], char *flag,
-                       char **input_path1, char **input_path2, char **output_path) {
-
+Status parse_arguments(int argc, char *argv[], char *flag, char **input_path1, char **input_path2, char **output_path) {
     *flag = '\0';
     *input_path1 = NULL;
     *input_path2 = NULL;
@@ -188,8 +186,7 @@ void to_lowercase_latin(char *str, size_t len) {
     }
 }
 
-Status convert_ascii_to_base(const char *str, size_t len, int base,
-                             char **result, size_t *out_len) {
+Status convert_ascii_to_base(const char *str, size_t len, int base, char **result, size_t *out_len) {
     if (str == NULL || result == NULL || out_len == NULL) {
         return ERR_ARGS_COUNT;
     }
