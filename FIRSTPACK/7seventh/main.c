@@ -17,20 +17,21 @@ int main(int argc, char *argv[]) {
         goto cleanup;
     }
 
-    f1 = fopen(input1, "r");
+    f1 = fopen(input1, "rb");
     if (f1 == NULL) {
         status = ERR_FILE_OPEN_IN;
         goto cleanup;
     }
 
     if (flag == 'r') {
-        f2 = fopen(input2, "r");
+        f2 = fopen(input2, "rb");
         if (f2 == NULL) {
             status = ERR_FILE_OPEN_IN;
-        goto cleanup;
+            goto cleanup;
+        }
     }
-}
-    fout = fopen(output, "w");
+
+    fout = fopen(output, "wb");
     if (fout == NULL) {
         status = ERR_FILE_OPEN_OUT;
         goto cleanup;
@@ -90,9 +91,11 @@ cleanup:
         case ERR_FILE_WRITE:
             fprintf(stderr, "Ошибка: сбой при записи в выходной файл.\n");
             break;
+
         case ERR_SAME_FILE:
             fprintf(stderr, "Ошибка: выходной файл совпадает с одним из входных.\n");
             break;
+
         default:
             fprintf(stderr, "Ошибка: неизвестный статус (%d).\n", status);
             break;
