@@ -49,8 +49,7 @@ Status parse_arguments(int argc, char *argv[], char *flag, char **input_path1, c
         *output_path = argv[3];
     }
 
-    if (is_same_file(*input_path1, *output_path) ||
-        (*input_path2 != NULL && is_same_file(*input_path2, *output_path))) {
+    if (is_same_file(*input_path1, *output_path) || (*input_path2 != NULL && is_same_file(*input_path2, *output_path))) {
         return ERR_SAME_FILE;
     }
 
