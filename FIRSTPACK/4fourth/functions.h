@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
+#include <stdint.h>
 #include <sys/stat.h>
 
 
@@ -26,11 +26,11 @@ Status parse_arguments(int argc, char *argv[], char **input_path, char **output_
 
 Status generate_output_filename(const char *input_path, char **output_path);
 
-char* read_line(FILE *fin, Status *st);
+char* read_line(FILE *fin, Status *st, size_t *out_len);
 
 Status process_file(FILE *fin, FILE *fout, char flag);
 
-Status flag_d(const char *line, FILE *fout);
-Status flag_i(const char *line, FILE *fout);
-Status flag_s(const char *line, FILE *fout);
-Status flag_a(const char *line, FILE *fout);
+Status flag_d(const char *line, size_t len, char **out_line, size_t *out_len);
+Status flag_i(const char *line, size_t len, size_t *count);
+Status flag_s(const char *line, size_t len, size_t *count);
+Status flag_a(const char *line, size_t len, char **out_line, size_t *out_len);

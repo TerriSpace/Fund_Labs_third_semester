@@ -124,7 +124,7 @@ Status parse_arguments(int argc, char *argv[], char **input_path, char **output_
         *output_path = NULL;
         return ERR_SAME_FILE;
     }
-    
+
     return STATUS_OK;
 }
 
@@ -148,7 +148,7 @@ Status check_same_file(const char *in_path, const char *out_path, int *is_same) 
     return STATUS_OK;
 }
 
-char* read_line(FILE *fin, Status *st) {
+char* read_line(FILE *fin, Status *st, size_t *out_len) {
     size_t capacity = 128;
     size_t length = 0;
     char *buffer = malloc(capacity);
@@ -161,6 +161,11 @@ char* read_line(FILE *fin, Status *st) {
     int c;
     while ((c = fgetc(fin)) != EOF) {
         if (length + 1 >= capacity) {
+            if (capacity > SIZE_MAX / 2) {
+                free(buffer);
+                *st = ERR_MEMORY;
+                return NULL;
+            }
             capacity *= 2;
             char *new_buffer = realloc(buffer, capacity);
             if (new_buffer == NULL) {
@@ -170,12 +175,8 @@ char* read_line(FILE *fin, Status *st) {
             }
             buffer = new_buffer;
         }
-
         buffer[length++] = (char)c;
-
-        if (c == '\n') {
-            break;
-        }
+        if (c == '\n') break;
     }
 
     if (ferror(fin)) {
@@ -191,22 +192,60 @@ char* read_line(FILE *fin, Status *st) {
     }
 
     buffer[length] = '\0';
+    *out_len = length;
     *st = STATUS_OK;
     return buffer;
 }
 
 Status process_file(FILE *fin, FILE *fout, char flag) {
-    char *line = NULL;
-    Status st = STATUS_OK;
-    Status read_st = STATUS_OK;
+    char   *line = NULL;
+    size_t  line_len = 0;
+    Status  st = STATUS_OK;
+    Status  read_st = STATUS_OK;
 
-    while ((line = read_line(fin, &read_st)) != NULL) {
+    while ((line = read_line(fin, &read_st, &line_len)) != NULL) {
+        char   *out_line = NULL;
+        size_t  out_len  = 0;
+        size_t  count    = 0;
+
         switch (flag) {
-            case 'd': st = flag_d(line, fout); break;
-            case 'i': st = flag_i(line, fout); break;
-            case 's': st = flag_s(line, fout); break;
-            case 'a': st = flag_a(line, fout); break;
-            default:  st = ERR_INVALID_FLAG;   break;
+            case 'd':
+                st = flag_d(line, line_len, &out_line, &out_len);
+                if (st == STATUS_OK) {
+                    if (fwrite(out_line, 1, out_len, fout) != out_len) {
+                        st = ERR_FILE_WRITE;
+                    }
+                    free(out_line);
+                }
+                break;
+
+            case 'i':
+                st = flag_i(line, line_len, &count);
+                if (st == STATUS_OK) {
+                    if (fprintf(fout, "%zu\n", count) < 0) st = ERR_FILE_WRITE;
+                }
+                break;
+
+            case 's':
+                st = flag_s(line, line_len, &count);
+                if (st == STATUS_OK) {
+                    if (fprintf(fout, "%zu\n", count) < 0) st = ERR_FILE_WRITE;
+                }
+                break;
+
+            case 'a':
+                st = flag_a(line, line_len, &out_line, &out_len);
+                if (st == STATUS_OK) {
+                    if (fwrite(out_line, 1, out_len, fout) != out_len) {
+                        st = ERR_FILE_WRITE;
+                    }
+                    free(out_line);
+                }
+                break;
+
+            default:
+                st = ERR_INVALID_FLAG;
+                break;
         }
 
         free(line);
@@ -219,9 +258,7 @@ Status process_file(FILE *fin, FILE *fout, char flag) {
     return read_st;
 }
 
-Status flag_d(const char *line, FILE *fout) {
-    size_t len = strlen(line);
-
+Status flag_d(const char *line, size_t len, char **out_line, size_t *out_len) {
     char *buffer = malloc(len + 1);
     if (buffer == NULL) {
         return ERR_MEMORY;
@@ -235,62 +272,45 @@ Status flag_d(const char *line, FILE *fout) {
     }
     buffer[j] = '\0';
 
-    if (fputs(buffer, fout) == EOF) {
-        free(buffer);
-        return ERR_FILE_WRITE;
-    }
-
-    free(buffer);
+    *out_line = buffer;
+    *out_len  = j;
     return STATUS_OK;
 }
 
-Status flag_i(const char *line, FILE *fout) {
-    size_t len = strlen(line);
-    size_t count = 0;
-
+Status flag_i(const char *line, size_t len, size_t *count) {
+    *count = 0;
     for (size_t i = 0; i < len; i++) {
         unsigned char c = (unsigned char)line[i];
         if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
-            count++;
+            (*count)++;
         }
     }
-
-    if (fprintf(fout, "%zu\n", count) < 0) {
-        return ERR_FILE_WRITE;
-    }
-
     return STATUS_OK;
 }
 
-Status flag_s(const char *line, FILE *fout) {
-    size_t len = strlen(line);
-    size_t count = 0;
-
+Status flag_s(const char *line, size_t len, size_t *count) {
+    *count = 0;
     for (size_t i = 0; i < len; i++) {
         unsigned char c = (unsigned char)line[i];
-
         int is_latin = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
         int is_digit = (c >= '0' && c <= '9');
         int is_space = (c == ' ');
 
         if (!is_latin && !is_digit && !is_space) {
-            count++;
+            (*count)++;
         }
     }
-
-    if (fprintf(fout, "%zu\n", count) < 0) {
-        return ERR_FILE_WRITE;
-    }
-
     return STATUS_OK;
 }
 
-Status flag_a(const char *line, FILE *fout) {
-    size_t len = strlen(line);
-
+Status flag_a(const char *line, size_t len, char **out_line, size_t *out_len) {
     size_t content_len = len;
     if (content_len > 0 && line[content_len - 1] == '\n') {
         content_len--;
+    }
+
+    if (content_len > (SIZE_MAX - 2) / 2) {
+        return ERR_MEMORY;
     }
 
     char *buffer = malloc(2 * content_len + 2);
@@ -313,13 +333,9 @@ Status flag_a(const char *line, FILE *fout) {
     }
 
     buffer[j++] = '\n';
-    buffer[j] = '\0';
+    buffer[j]   = '\0';
 
-    if (fputs(buffer, fout) == EOF) {
-        free(buffer);
-        return ERR_FILE_WRITE;
-    }
-
-    free(buffer);
+    *out_line = buffer;
+    *out_len  = j;
     return STATUS_OK;
 }

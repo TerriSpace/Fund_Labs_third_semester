@@ -1,4 +1,4 @@
-Hello, World! 2024
+Hello,\0 World! 2024
 abc123def456
 42
 No digits here!
