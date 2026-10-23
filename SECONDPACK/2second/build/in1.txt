@@ -1,0 +1,3 @@
+3 Ivan Petrov 50000.5
+1 Anna Sidorova 45000
+2 Petr Ivanov 60000
